@@ -159,7 +159,7 @@ class FormulaProcessor:
 
         return doc_layout_result
 
-    def recognize_formulas(self, batch_size: int = 128):
+    def recognize_formulas(self, batch_size: int = 128, num_workers: int = 32):
         """
         This method is used to recognize formulas in a batch of images.
 
@@ -186,7 +186,7 @@ class FormulaProcessor:
         start = time.time()
 
         dataset = MathDataset(self.mf_image_list, transform=self.mfr_transform)
-        dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=32)
+        dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
         mfr_res = []
         for imgs in dataloader:
             imgs = imgs.to(device)
@@ -197,7 +197,7 @@ class FormulaProcessor:
 
         logger.info(f'Formula nums: {len(self.mf_image_list)} mfr time: {round(time.time() - start, 2)}')
 
-    def detect_recognize_formulas(self, img_list: List, doc_layout_result: List[dict], batch_size: int = 128):
+    def detect_recognize_formulas(self, img_list: List, doc_layout_result: List[dict], batch_size: int = 128, num_workers: int = 32):
         """
         Detect and recognize formulas in document layout results.
 
@@ -216,7 +216,7 @@ class FormulaProcessor:
 
         """
         doc_layout_result = self.detect_formulas(img_list, doc_layout_result)
-        self.recognize_formulas(batch_size)
+        self.recognize_formulas(batch_size, num_workers)
         return doc_layout_result
 
     def clear_memory(self):

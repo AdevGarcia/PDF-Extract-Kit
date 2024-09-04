@@ -19,6 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--pdf', type=str, required=True, help="Path to the input PDF file")
     parser.add_argument('--output', type=str, default="output", help="Output directory or filename prefix (default: 'output')")
     parser.add_argument('--batch-size', type=int, default=128, help="Batch size for processing (default: 128)")
+    parser.add_argument('--num-workers', type=int, default=32, help="Num workers for processing (default: 32)")
     parser.add_argument('--vis', action='store_true', help="Enable visualization mode")
     parser.add_argument('--render', action='store_true', help="Enable rendering mode")
     args = parser.parse_args()
@@ -41,7 +42,7 @@ if __name__ == '__main__':
     for idx, single_pdf, img_list in pdf_processor.process_all_pdfs(all_pdfs):
 
         doc_layout_result = analyzer.detect_layout(img_list)
-        doc_layout_result = formulas.detect_recognize_formulas(img_list, doc_layout_result, args.batch_size)
+        doc_layout_result = formulas.detect_recognize_formulas(img_list, doc_layout_result, args.batch_size, args.num_workers)
         doc_layout_result = ocr_processor.recognize_ocr(img_list, doc_layout_result)
         doc_layout_result = table_processor.recognize_tables(img_list, doc_layout_result)
 
