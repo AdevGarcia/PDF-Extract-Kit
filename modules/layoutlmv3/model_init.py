@@ -130,6 +130,7 @@ class Layoutlmv3_Predictor(object):
                 continue
             page_layout_result["layout_dets"].append({
                 "category_id": labels[bbox_idx],
+                "category": self.mapping[int(labels[bbox_idx])],
                 "poly": [
                     boxes[bbox_idx][0], boxes[bbox_idx][1],
                     boxes[bbox_idx][2], boxes[bbox_idx][1],
