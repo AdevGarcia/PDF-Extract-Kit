@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import json
 
 from magic_pdf.pipe.UNIPipe import UNIPipe
@@ -7,24 +7,21 @@ from magic_pdf.rw.DiskReaderWriter import DiskReaderWriter
 import magic_pdf.model as model_config
 model_config.__use_inside_model__ = True
 
-current_script_dir = os.path.dirname(os.path.abspath(__file__))
+def post_process(pdf: str, output: str = 'output'):
 
-if __name__ == '__main__':
-    pdf_path = "1706.03762.pdf"
-    model_path = 'output/1706.03762.json'
-    output_dir = 'output'
+    current_script_dir = Path(__file__).parent
 
-    pdf_path = os.path.join(current_script_dir, pdf_path)
-    model_path = os.path.join(current_script_dir, model_path)
-    output_dir = os.path.join(current_script_dir, output_dir)
-    filename = pdf_path.split('.')[0]
-
-    local_image_dir = os.path.join(current_script_dir, f'{output_dir}/images')
-    image_dir = str(os.path.basename(local_image_dir))
-
-    image_writer = DiskReaderWriter(local_image_dir)
+    pdf_path = Path(pdf)
+    filename = str(pdf_path.stem)
+    pdf_path = current_script_dir / pdf_path
+    output_dir = current_script_dir / output
+    model_path = output_dir / f"{filename}.json"
+    image_dir = output_dir / 'images'
 
     pdf_bytes = open(pdf_path, "rb").read()
+
+    image_writer = DiskReaderWriter(image_dir)
+    md_writer = DiskReaderWriter(output_dir)
 
     pipe = UNIPipe(
         pdf_bytes=pdf_bytes,
@@ -38,10 +35,14 @@ if __name__ == '__main__':
 
     pipe.pipe_classify()
     pipe.pipe_parse()
-    md_content = pipe.pipe_mk_markdown(image_dir, drop_mode="none")
-    content_list = pipe.pipe_mk_uni_format(image_dir)
+    md_content = pipe.pipe_mk_markdown(img_parent_path='images', drop_mode="none")
+    content_list = pipe.pipe_mk_uni_format(img_parent_path='images')
 
-    md_writer = DiskReaderWriter(output_dir)
     md_writer.write(content=md_content, path=f"{filename}.md")
     md_writer.write(content=json.dumps(pipe.pdf_mid_data, ensure_ascii=False, indent=4), path=f"{filename}_mid.json")
     md_writer.write(content=json.dumps(content_list, ensure_ascii=False, indent=4), path=f"{filename}_content.json")
+
+
+if __name__ == '__main__':
+
+    post_process(pdf="1706.03762.pdf", output='output')
