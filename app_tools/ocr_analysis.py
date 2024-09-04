@@ -59,6 +59,9 @@ class OCRProcessor:
             A new layout detail with a category ID of 15 (corresponding to the recognized text) is created, and this detail is added to the `doc_layout_result`.
         7. The time taken for the OCR recognition is recorded and the updated `doc_layout_result` list is returned.
         """
+        mapping = ["title", "plain text", "abandon", "figure", "figure_caption", "table", "table_caption",
+                        "table_footnote", "isolate_formula", "formula_caption"]
+
         self.logger.debug('OCR recognition - init')
         start = time.time()
 
@@ -80,9 +83,11 @@ class OCRProcessor:
                     xmin, ymin = int(res['poly'][0]), int(res['poly'][1])
                     xmax, ymax = int(res['poly'][4]), int(res['poly'][5])
                     crop_box = (xmin, ymin, xmax, ymax)
-                    cropped_img = Image.new('RGB', pil_img.size, 'white')
+
+                    cropped_img = Image.new(mode='RGB', size=pil_img.size, color='white')
                     cropped_img.paste(pil_img.crop(crop_box), crop_box)
                     cropped_img = cv2.cvtColor(np.asarray(cropped_img), cv2.COLOR_RGB2BGR)
+
                     ocr_res = self.ocr_model.ocr(cropped_img, mfd_res=single_page_mfdetrec_res)[0]
                     if ocr_res:
                         for box_ocr_res in ocr_res:
@@ -90,6 +95,7 @@ class OCRProcessor:
                             text, score = box_ocr_res[1]
                             doc_layout_result[idx]['layout_dets'].append({
                                 'category_id': 15,
+                                'category': mapping[int(res['category_id'])],
                                 'poly': p1 + p2 + p3 + p4,
                                 'score': round(score, 2),
                                 'text': text,
