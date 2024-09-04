@@ -13,3 +13,6 @@ opencv-python==4.6.0.66
 Pillow==8.4.0
 PyYAML==6.0.2
 pytz==2024.1
+
+fastapi==0.112.2
+uvicorn==0.30.6
