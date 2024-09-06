@@ -100,6 +100,7 @@ class DotDict(dict):
         
 class Layoutlmv3_Predictor(object):
     def __init__(self, weights):
+        #self.dec = 4
         layout_args = {
             "config_file": "modules/layoutlmv3/layoutlmv3_base_inference.yaml",
             "resume": False,
@@ -125,9 +126,21 @@ class Layoutlmv3_Predictor(object):
         boxes = outputs["instances"].to("cpu")._fields["pred_boxes"].tensor.tolist()
         labels = outputs["instances"].to("cpu")._fields["pred_classes"].tolist()
         scores = outputs["instances"].to("cpu")._fields["scores"].tolist()
+
         for bbox_idx in range(len(boxes)):
             if labels[bbox_idx] in ignore_catids:
                 continue
+            # page_layout_result["layout_dets"].append({
+            #     "category_id": labels[bbox_idx],
+            #     "category": self.mapping[int(labels[bbox_idx])],
+            #     "poly": [
+            #         round(boxes[bbox_idx][0],self.dec), round(boxes[bbox_idx][1],self.dec),
+            #         round(boxes[bbox_idx][2],self.dec), round(boxes[bbox_idx][1],self.dec),
+            #         round(boxes[bbox_idx][2],self.dec), round(boxes[bbox_idx][3],self.dec),
+            #         round(boxes[bbox_idx][0],self.dec), round(boxes[bbox_idx][3],self.dec),
+            #     ],
+            #     "score": round(scores[bbox_idx],self.dec)
+            # })
             page_layout_result["layout_dets"].append({
                 "category_id": labels[bbox_idx],
                 "category": self.mapping[int(labels[bbox_idx])],

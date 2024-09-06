@@ -138,6 +138,7 @@ class FormulaProcessor:
         for idx, image in enumerate(img_list):
             mfd_res = self.mfd_model.predict(image, imgsz=img_size, conf=conf_thres, iou=iou_thres, verbose=True)[0]
 
+            cnt = 0
             for xyxy, conf, cla in zip(mfd_res.boxes.xyxy.cpu(), mfd_res.boxes.conf.cpu(), mfd_res.boxes.cls.cpu()):
                 xmin, ymin, xmax, ymax = [int(p.item()) for p in xyxy]
                 new_item = {
@@ -149,6 +150,13 @@ class FormulaProcessor:
                 doc_layout_result[idx]['layout_dets'].append(new_item)
                 self.latex_filling_list.append(new_item)
                 bbox_img = get_croped_image(Image.fromarray(image), [xmin, ymin, xmax, ymax])
+
+                ###################################
+                # Guardar la imagen
+                bbox_img.save(f'output/formula/{idx}-{cnt}.jpg')
+                cnt +=1
+                ###################################
+
                 self.mf_image_list.append(bbox_img)
 
             del mfd_res
