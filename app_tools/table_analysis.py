@@ -91,11 +91,14 @@ class TableProcessor:
             single_page_res = doc_layout_result[idx]['layout_dets']
 
             for jdx, res in enumerate(single_page_res):
+                # 5: table
                 if int(res['category_id']) == 5:  # Perform table recognition
                     xmin, ymin = int(res['poly'][0]), int(res['poly'][1])
                     xmax, ymax = int(res['poly'][4]), int(res['poly'][5])
                     crop_box = (xmin, ymin, xmax, ymax)
                     cropped_img = pil_img.crop(crop_box)
+
+                    # cropped_img.save(f'output2/table/table_img{idx}_{jdx}.png', 'PNG')
 
                     start = time.time()
                     with torch.no_grad():

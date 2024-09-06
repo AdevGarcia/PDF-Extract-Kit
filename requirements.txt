@@ -16,3 +16,6 @@ pytz==2024.1
 
 fastapi==0.112.2
 uvicorn==0.30.6
+
+# https://github.com/UniModal4Reasoning/StructEqTable-Deploy/blob/main/docs/GETTING_STARTED.md
+# pip install --extra-index-url https://pypi.nvidia.com tensorrt-llm

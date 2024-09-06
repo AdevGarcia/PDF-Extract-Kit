@@ -1,5 +1,6 @@
 import os, gc
 import time
+import json
 import argparse
 from typing import List, Tuple
 
@@ -132,17 +133,29 @@ class FormulaProcessor:
         conf_thres = self.config['model_args']['conf_thres']
         iou_thres = self.config['model_args']['iou_thres']
 
+        # conf_thres [0.25]: Establece el umbral de confianza mínimo para las detecciones. Los objetos detectados con una confianza inferior a este umbral se ignorarán. Ajustar este valor puede ayudar a reducir los falsos positivos.
+        # iou_thres [0.45]: Umbral de intersección sobre unión (IoU) para supresión no máxima (NMS). Los valores más bajos dan como resultado menos detecciones al eliminar cuadros superpuestos, lo que resulta útil para reducir los duplicados.
+        # imgsz [1888]: Define el tamaño de la imagen para la inferencia. Puede ser un único entero 640 para redimensionar en cuadrados o una tupla (alto, ancho). Un tamaño adecuado puede mejorar la precisión de la detección y la velocidad de procesamiento.
+        # half [Flse]: Permite la inferencia de media precisión (FP16), que puede acelerar la inferencia del modelo en las GPU compatibles con un impacto mínimo en la precisión.
         logger.debug('Formula detection - init')
         start = time.time()
 
         for idx, image in enumerate(img_list):
             mfd_res = self.mfd_model.predict(image, imgsz=img_size, conf=conf_thres, iou=iou_thres, verbose=True)[0]
 
-            cnt = 0
             for xyxy, conf, cla in zip(mfd_res.boxes.xyxy.cpu(), mfd_res.boxes.conf.cpu(), mfd_res.boxes.cls.cpu()):
                 xmin, ymin, xmax, ymax = [int(p.item()) for p in xyxy]
+
+                _category_id = 13 + int(cla.item())
+                _category = ''
+                if _category_id == 13:
+                    _category = 'inline_formula'
+                if _category_id == 14:
+                    _category = 'isolated_formula'
+
                 new_item = {
-                    'category_id': 13 + int(cla.item()),
+                    'category_id': _category_id,
+                    'category': _category,
                     'poly': [xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax],
                     'score': round(float(conf.item()), 2),
                     'latex': '',
@@ -150,12 +163,6 @@ class FormulaProcessor:
                 doc_layout_result[idx]['layout_dets'].append(new_item)
                 self.latex_filling_list.append(new_item)
                 bbox_img = get_croped_image(Image.fromarray(image), [xmin, ymin, xmax, ymax])
-
-                ###################################
-                # Guardar la imagen
-                bbox_img.save(f'output/formula/{idx}-{cnt}.jpg')
-                cnt +=1
-                ###################################
 
                 self.mf_image_list.append(bbox_img)
 
@@ -193,12 +200,15 @@ class FormulaProcessor:
         logger.debug('Formula recognition')
         start = time.time()
 
+        # Recoge las imagenes que anteriormente se han identificado como formulas
         dataset = MathDataset(self.mf_image_list, transform=self.mfr_transform)
         dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
         mfr_res = []
         for imgs in dataloader:
             imgs = imgs.to(device)
-            output = self.mfr_model.generate({'image': imgs})
+
+            output = self.mfr_model.generate({'image': imgs}) # output -> dict_keys(['pred_tokens', 'pred_str', 'pred_ids'])
+
             mfr_res.extend(output['pred_str'])
         for res, latex in zip(self.latex_filling_list, mfr_res):
             res['latex'] = latex_rm_whitespace(latex)

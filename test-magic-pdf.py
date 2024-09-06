@@ -45,4 +45,4 @@ def post_process(pdf: str, output: str = 'output'):
 
 if __name__ == '__main__':
 
-    post_process(pdf="1706.03762.pdf", output='output')
+    post_process(pdf="1706.03762.pdf", output='output2')

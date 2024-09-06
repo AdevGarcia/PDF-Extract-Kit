@@ -62,6 +62,24 @@ class OCRProcessor:
         mapping = ["title", "plain text", "abandon", "figure", "figure_caption", "table", "table_caption",
                         "table_footnote", "isolate_formula", "formula_caption"]
 
+        # doc_layout_result2 = [
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []},
+        #     {"layout_dets": []}
+        # ]
+
         self.logger.debug('OCR recognition - init')
         start = time.time()
 
@@ -71,6 +89,8 @@ class OCRProcessor:
             single_page_mfdetrec_res = []
 
             for res in single_page_res:
+                # 13: inline_formula
+                # 14: isolated_formula
                 if int(res['category_id']) in [13, 14]:  # Categories for formula
                     xmin, ymin = int(res['poly'][0]), int(res['poly'][1])
                     xmax, ymax = int(res['poly'][4]), int(res['poly'][5])
@@ -79,6 +99,12 @@ class OCRProcessor:
                     })
 
             for res in single_page_res:
+                # 0: title
+                # 1: plain_text
+                # 2: abandon
+                # 4: figure_caption
+                # 6: table_caption
+                # 7: table_footnote
                 if int(res['category_id']) in [0, 1, 2, 4, 6, 7]:  # Categories that need OCR
                     xmin, ymin = int(res['poly'][0]), int(res['poly'][1])
                     xmax, ymax = int(res['poly'][4]), int(res['poly'][5])
@@ -88,11 +114,16 @@ class OCRProcessor:
                     cropped_img.paste(pil_img.crop(crop_box), crop_box)
                     cropped_img = cv2.cvtColor(np.asarray(cropped_img), cv2.COLOR_RGB2BGR)
 
-                    ocr_res = self.ocr_model.ocr(cropped_img, mfd_res=single_page_mfdetrec_res)[0]
+                    # cls: usar o no el clasificador de ángulos. El valor predeterminado es Verdadero.
+                    # Si es Verdadero, se puede reconocer el texto con una rotación de 180 grados.
+                    # Si no hay texto rotado 180 grados, use cls=False para obtener un mejor rendimiento.
+                    # Se puede reconocer el texto con una rotación de 90 o 270 grados incluso si cls=False.
+                    ocr_res = self.ocr_model.ocr(cropped_img, mfd_res=single_page_mfdetrec_res, cls=False)[0]
                     if ocr_res:
                         for box_ocr_res in ocr_res:
                             p1, p2, p3, p4 = box_ocr_res[0]
                             text, score = box_ocr_res[1]
+
                             doc_layout_result[idx]['layout_dets'].append({
                                 'category_id': 15,
                                 'category': mapping[int(res['category_id'])],
