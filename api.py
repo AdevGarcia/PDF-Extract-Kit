@@ -29,7 +29,7 @@ start = time.time()
 analyzer = LayoutAnalyzer()
 formulas = FormulaProcessor()
 ocr_processor = OCRProcessor(show_log=True)
-# table_processor = TableProcessor()
+table_processor = TableProcessor()
 logger.info(f'Model init done in {int(time.time() - start)}s!')
 ## ======== model init ========##
 
@@ -50,7 +50,7 @@ async def process_pdf(file: UploadFile = File(...), batch_size: int = 128, num_w
         doc_layout_result = analyzer.detect_layout(img_list)
         doc_layout_result = formulas.detect_recognize_formulas(img_list, doc_layout_result, batch_size, num_workers)
         doc_layout_result = ocr_processor.recognize_ocr(img_list, doc_layout_result)
-        # doc_layout_result = table_processor.recognize_tables(img_list, doc_layout_result)
+        doc_layout_result = table_processor.recognize_tables(img_list, doc_layout_result)
 
     # result = {
     #     "result": doc_layout_result
