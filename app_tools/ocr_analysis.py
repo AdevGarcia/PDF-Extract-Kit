@@ -62,24 +62,6 @@ class OCRProcessor:
         mapping = ["title", "plain text", "abandon", "figure", "figure_caption", "table", "table_caption",
                         "table_footnote", "isolate_formula", "formula_caption"]
 
-        # doc_layout_result2 = [
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []},
-        #     {"layout_dets": []}
-        # ]
-
         self.logger.debug('OCR recognition - init')
         start = time.time()
 

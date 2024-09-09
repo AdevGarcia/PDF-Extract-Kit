@@ -1,6 +1,6 @@
 import time
 import gc
-import pandas as pd
+# import pandas as pd
 import torch
 from typing import Optional
 
@@ -57,7 +57,7 @@ class LayoutAnalyzer:
         model = Layoutlmv3_Predictor(weight)
         return model
 
-    def detect_layout(self, img_list: list) -> tuple[list, pd.DataFrame]:
+    def detect_layout(self, img_list: list) -> list:
         """
         This method `detect_layout` is used to detect the layout of a list of images.
 
@@ -116,22 +116,22 @@ class LayoutAnalyzer:
 
         self.logger.debug(f'Layout detection done in {round(time.time() - start, 2)}s!')
         #######################
-        start = time.time()
-        l_layout_dets = []
-        for i in range(len(doc_layout_result)):
-            layout_dets = doc_layout_result[i]['layout_dets']
-            page_info = doc_layout_result[i]['page_info']
+        # start = time.time()
+        # l_layout_dets = []
+        # for i in range(len(doc_layout_result)):
+        #     layout_dets = doc_layout_result[i]['layout_dets']
+        #     page_info = doc_layout_result[i]['page_info']
+        #
+        #     _df = pd.DataFrame(layout_dets)
+        #     _df['page_no'] = page_info['page_no']
+        #     _df['height'] = page_info['height']
+        #     _df['width'] = page_info['width']
+        #
+        #     l_layout_dets.append(_df)
+        # df = pd.concat(l_layout_dets, ignore_index=True)
+        # self.logger.debug(f'Generate Dataframe in {round(time.time() - start, 4)}s!')
 
-            _df = pd.DataFrame(layout_dets)
-            _df['page_no'] = page_info['page_no']
-            _df['height'] = page_info['height']
-            _df['width'] = page_info['width']
-
-            l_layout_dets.append(_df)
-        df = pd.concat(l_layout_dets, ignore_index=True)
-        self.logger.debug(f'Generate Dataframe in {round(time.time() - start, 4)}s!')
-
-        return doc_layout_result, df
+        return doc_layout_result
 
     def clear_model(self):
         """

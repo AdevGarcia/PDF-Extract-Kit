@@ -5,6 +5,7 @@ from PIL import Image
 from struct_eqtable import build_model
 
 from app_tools.config import load_config, setup_logging
+from app_tools.utils import save_image
 
 
 class TableProcessor:
@@ -54,7 +55,7 @@ class TableProcessor:
             tr_model = tr_model.cuda()
         return tr_model
 
-    def recognize_tables(self, img_list: list, doc_layout_result: list) -> list:
+    def recognize_tables(self, img_list: list, doc_layout_result: list, save: bool, output_dir: str) -> list:
         """
         This method recognizes tables in a list of images based on the document layout results.
 
@@ -98,17 +99,18 @@ class TableProcessor:
                     crop_box = (xmin, ymin, xmax, ymax)
                     cropped_img = pil_img.crop(crop_box)
 
-                    # cropped_img.save(f'output2/table/table_img{idx}_{jdx}.png', 'PNG')
+                    if save:
+                        save_image(output_dir=f'{output_dir}/table', filename=f'table_img{idx}_{jdx}.png', image=cropped_img)
+                    else:
+                        start = time.time()
+                        with torch.no_grad():
+                            start_1 = time.time()
+                            output = self.tr_model(cropped_img)  # This operation might take significant time
+                            self.logger.debug(f'{idx} - {jdx} tr_model generate in: {round(time.time() - start_1, 2)}s')
 
-                    start = time.time()
-                    with torch.no_grad():
-                        start_1 = time.time()
-                        output = self.tr_model(cropped_img)  # This operation might take significant time
-                        self.logger.debug(f'{idx} - {jdx} tr_model generate in: {round(time.time() - start_1, 2)}s')
-
-                    if (time.time() - start) > max_time:
-                        res["timeout"] = True
-                    res["latex"] = output[0]
+                        if (time.time() - start) > max_time:
+                            res["timeout"] = True
+                        res["latex"] = output[0]
 
         self.logger.info(f'Table recognition done in: {round(time.time() - start_0, 2)}s')
 

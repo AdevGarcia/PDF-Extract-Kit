@@ -1,5 +1,6 @@
 import os
 import json
+from PIL import Image
 
 
 def save_file(output_dir, single_pdf, doc_layout_result):
@@ -19,3 +20,10 @@ def save_file(output_dir, single_pdf, doc_layout_result):
     with open(os.path.join(output_dir, f'{basename}.json'), 'w') as f:
         json.dump(doc_layout_result, f)
     return basename
+
+
+def save_image(output_dir: str, filename: str, image: Image.Image):
+
+    os.makedirs(output_dir, exist_ok=True)
+    image.save(fp=f'{output_dir}/{filename}',format='PNG')
+

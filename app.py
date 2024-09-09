@@ -44,7 +44,7 @@ if __name__ == '__main__':
         doc_layout_result = analyzer.detect_layout(img_list)
         doc_layout_result = formulas.detect_recognize_formulas(img_list, doc_layout_result, args.batch_size, args.num_workers)
         doc_layout_result = ocr_processor.recognize_ocr(img_list, doc_layout_result)
-        doc_layout_result = table_processor.recognize_tables(img_list, doc_layout_result)
+        doc_layout_result = table_processor.recognize_tables(img_list, doc_layout_result, save=True, output_dir=args.output)
 
         basename = save_file(args.output, single_pdf, doc_layout_result)
         logger.debug(f'Save file: {basename}.json')
